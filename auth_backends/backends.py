@@ -5,6 +5,8 @@ For more information visit https://docs.djangoproject.com/en/dev/topics/auth/cus
 import jwt
 from django.dispatch import Signal
 from social_core.backends.oauth import BaseOAuth2
+import logging
+logger = logging.getLogger(__name__)
 
 PROFILE_CLAIMS_TO_DETAILS_KEY_MAP = {
     'preferred_username': 'username',
@@ -103,10 +105,12 @@ class EdXOAuth2(BaseOAuth2):
         decoded_access_token = jwt.decode(access_token, algorithms=["HS256"], options={"verify_signature": False})
         keys = list(self.CLAIMS_TO_DETAILS_KEY_MAP.keys()) + ['administrator', 'superuser']
         user_data = {key: decoded_access_token[key] for key in keys if key in decoded_access_token}
+        logger.info("User data retrieved: %s", user_data)
         return user_data
 
     def get_user_details(self, response):
         details = self._map_user_details(response)
+        logger.info("Mapped user details: %s", details)
 
         # Limits the scope of languages we can use
         locale = response.get('locale')
